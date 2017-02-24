@@ -1,6 +1,6 @@
-# 指切り (yubikiri)
+# ゆびきり (Yubikiri)
 
-*Yubikiri* ("Pinky Swear!") is a library to facilitate Promise-based data loading in JavaScript. You can specify an object where keys are Promises and the library will fetch them in parallel and return a Promise that resolves when all the Promises resolve. You can also specify Promises that depend on other Promises defined in the object and Yubikiri will order then appropriately.
+ゆびきり (*yubikiri*, or "pinky swear") is a library to facilitate Promise-based data loading in JavaScript. You can specify an object where keys are Promises and the library will fetch them in parallel and return a Promise that resolves when all the Promises resolve. You can also specify Promises that depend on other Promises defined in the object and Yubikiri will order then appropriately.
 
 ## Requirements
 
