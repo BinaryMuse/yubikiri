@@ -4,7 +4,7 @@
 
 ## Requirements
 
-Yubikiri makes use of **Promises**, **arrow functions**, and **Proxies**, so all these must be available in your JavaScript environment for Yubikiri to work.
+Yubikiri makes use of **Promises** and **Proxies**, so both these must be available in your JavaScript environment for Yubikiri to work.
 
 ## Installation
 
