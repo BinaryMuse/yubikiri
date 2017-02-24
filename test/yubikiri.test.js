@@ -1,140 +1,123 @@
 let yubikiri = require('../')
 let assert = require('chai').assert
 
-describe('yubikiri', () => {
-  it('loads data', function(done) {
+describe('yubikiri', function () {
+  it('loads data', async function() {
     const promise = yubikiri({
       one: Promise.resolve(1),
       two: Promise.resolve(2)
     })
-    promise.then(function(data) {
-      assert.deepEqual(data, {one: 1, two: 2})
-    }).then(done, done)
+    const data = await promise
+    assert.deepEqual(data, {one: 1, two: 2})
   })
 
   describe('dependent data', function() {
-    it('loads a promise dependent on another value', function(done) {
+    it('loads a promise dependent on another value', async function() {
       const promise = yubikiri({
         one: Promise.resolve(1),
-        two: function(q) {
-          return q.one.then(function(value) {
-            return value + 1
-          })
+        two: async (q) => {
+          const one = await q.one
+          return one + 1
         }
       })
-      promise.then(function(data) {
-        assert.deepEqual(data, {one: 1, two: 2})
-      }).then(done, done)
+      const data = await promise
+      assert.deepEqual(data, {one: 1, two: 2})
     })
 
-    it('works independent of timing', function(done) {
+    it('works independent of timing', async function() {
       const promise = yubikiri({
         one: Promise.resolve(1),
-        two: function(q) {
-          return q.one.then(function(value) {
-            return new Promise((r) => setTimeout(() => r(value + 1), 10))
-          })
+        two: async (q) => {
+          const one = await q.one
+          return new Promise(res => setTimeout(() => res(one + 1), 10))
         }
       })
-      promise.then(function(data) {
-        assert.deepEqual(data, {one: 1, two: 2})
-      }).then(done, done)
+      const data = await promise
+      assert.deepEqual(data, {one: 1, two: 2})
     })
 
-    it('allows depending on other depdendent values', function(done) {
+    it('allows depending on other depdendent values', async function() {
       const promise = yubikiri({
-        one: function(q) {
-          return q.two.then(function(value) {
-            return value - 1
-          })
+        one: async (q) => {
+          const two = await q.two
+          return two - 1
         },
         two: Promise.resolve(2),
-        three: function(q) {
-          return q.one.then(function(value) {
-            return value + 2
-          })
+        three: async (q) => {
+          const one = await q.one
+          return one + 2
         },
       })
-      promise.then(function(data) {
-        assert.deepEqual(data, {one: 1, two: 2, three: 3})
-      }).then(done, done)
+      const data = await promise
+      assert.deepEqual(data, {one: 1, two: 2, three: 3})
     })
 
-    it('allows depending on multiple values', function(done) {
+    it('allows depending on multiple values', async function() {
       const promise = yubikiri({
         one: Promise.resolve(1),
         two: Promise.resolve(2),
-        three: function(q) {
-          return q.one.then(one => {
-            return q.two.then(two => {
-              return one + two
-            })
-          })
+        three: async (q) => {
+          const one = await q.one
+          const two = await q.two
+          return one + two
         },
       })
-      promise.then(function(data) {
-        assert.deepEqual(data, {one: 1, two: 2, three: 3})
-      }).then(done, done)
+      const data = await promise
+      assert.deepEqual(data, {one: 1, two: 2, three: 3})
     })
 
-    it('rejects immediately when any promise fails', function(done) {
+    it('rejects immediately when any promise fails', async function() {
       const promise = yubikiri({
         one: Promise.resolve(1),
         two: new Promise((res, rej) => {
           setTimeout(() => rej(new Error('oops')), 10)
         })
       })
-      promise.then(() => {
-        done(new Error('Expected to reject'))
-      }, function(err) {
+      try {
+        await promise
+        throw new Error('Expected promise to be rejected')
+      } catch (err) {
         assert.equal(err.message, 'oops')
-        done()
-      }).then(null, done)
+      }
     })
 
-    it('works independent of order', function(done) {
+    it('works independent of order', async function() {
       const promise = yubikiri({
-        one: function(q) {
-          return q.three.then(function(value) {
-            return value - 2
-          })
+        one: async (q) => {
+          const three = await q.three
+          return three - 2
         },
         two: Promise.resolve(2),
-        three: function(q) {
-          return q.two.then(function(value) {
-            return value + 1
-          })
+        three: async (q) => {
+          const two = await q.two
+          return two + 1
         },
       })
-      promise.then(function(data) {
-        assert.deepEqual(data, {one: 1, two: 2, three: 3})
-      }).then(done, done)
+      const data = await promise
+      assert.deepEqual(data, {one: 1, two: 2, three: 3})
     })
 
-    it('does not loop infinitely', function(done) {
+    it('does not loop infinitely', async function() {
       const promise = yubikiri({
-        one: function(q) {
-          return q.three.then(function(value) {
-            return value - 2
-          })
+        one: async (q) => {
+          const three = await q.three
+          return three - 2
         },
-        two: function(q) {
-          return q.one.then(function(value) {
-            return value + 1
-          })
+        two: async (q) => {
+          const one = await q.one
+          return one + 1
         },
-        three: function(q) {
-          return q.two.then(function(value) {
-            return value + 1
-          })
+        three: async (q) => {
+          const two = await q.two
+          return two + 1
         },
       })
-      promise.then(function() {
-        done(new Error('Excepted to reject with an error'))
-      }, function(err) {
+      try {
+        const data = await promise
+        throw new Error('Expected promise to be rejected')
+      } catch (err) {
         assert.match(err.message, /loop.*one -> three -> two -> one/)
-        done()
-      }).then(null, done)
+      }
     })
   })
 })
