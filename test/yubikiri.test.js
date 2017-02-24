@@ -60,6 +60,21 @@ describe('yubikiri', () => {
       }).then(done, done)
     })
 
+    it('rejects immediately when any promise fails', function(done) {
+      const promise = yubikiri({
+        one: Promise.resolve(1),
+        two: new Promise((res, rej) => {
+          setTimeout(() => rej(new Error('oops')), 10)
+        })
+      })
+      promise.then(() => {
+        done(new Error('Expected to reject'))
+      }, function(err) {
+        assert.equal(err.message, 'oops')
+        done()
+      }).then(null, done)
+    })
+
     it('works independent of order', function(done) {
       const promise = yubikiri({
         one: function(q) {
