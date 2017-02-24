@@ -60,6 +60,23 @@ describe('yubikiri', () => {
       }).then(done, done)
     })
 
+    it('allows depending on multiple values', function(done) {
+      const promise = yubikiri({
+        one: Promise.resolve(1),
+        two: Promise.resolve(2),
+        three: function(q) {
+          return q.one.then(one => {
+            return q.two.then(two => {
+              return one + two
+            })
+          })
+        },
+      })
+      promise.then(function(data) {
+        assert.deepEqual(data, {one: 1, two: 2, three: 3})
+      }).then(done, done)
+    })
+
     it('rejects immediately when any promise fails', function(done) {
       const promise = yubikiri({
         one: Promise.resolve(1),
