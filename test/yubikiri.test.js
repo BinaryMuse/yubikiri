@@ -78,5 +78,31 @@ describe('yubikiri', () => {
         assert.deepEqual(data, {one: 1, two: 2, three: 3})
       }).then(done, done)
     })
+
+    it('does not loop infinitely', function(done) {
+      const promise = yubikiri({
+        one: function(q) {
+          return q.three.then(function(value) {
+            return value - 2
+          })
+        },
+        two: function(q) {
+          return q.one.then(function(value) {
+            return value + 1
+          })
+        },
+        three: function(q) {
+          return q.two.then(function(value) {
+            return value + 1
+          })
+        },
+      })
+      promise.then(function() {
+        done(new Error('Excepted to reject with an error'))
+      }, function(err) {
+        assert.match(err.message, /loop.*one -> three -> two -> one/)
+        done()
+      }).then(null, done)
+    })
   })
 })
