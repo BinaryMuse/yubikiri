@@ -24,7 +24,6 @@ const data = await yubikiri({
   two: Promise.resolve(2)
 })
 
-
 // data === { one: 1, two: 2 }
 ```
 
