@@ -1,6 +1,6 @@
 {
   "name": "yubikiri",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Promise-based data loading",
   "main": "lib/yubikiri.js",
   "scripts": {
