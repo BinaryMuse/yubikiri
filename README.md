@@ -1,12 +1,10 @@
 # ゆびきり (Yubikiri)
 
-ゆびきり (*yubikiri*, or "pinky swear") is a library to facilitate Promise-based data loading in JavaScript. You can specify an object where keys are Promises and the library will fetch them in parallel and return a Promise that resolves when all the Promises resolve. You can also specify Promises that depend on other Promises defined in the object and Yubikiri will order then appropriately.
-
-## Requirements
-
-Yubikiri makes use of **Promises** and **Proxies**, so both these must be available in your JavaScript environment for Yubikiri to work.
+ゆびきり (*yubikiri*, or "pinky swear") is a library to facilitate Promise-based data loading in JavaScript. You provide an object filled with plain values, Promises, or functions, and Yubikiri will order the dependencies and return a Promise that resolves to an object with all the sub-Promises resolved.
 
 ## Installation
+
+Yubikiri makes use of **Proxies**, **Reflect**, and **async/await**. Node.js v7.6.0 is the first version that supports Yubikiri.
 
 With npm:
 
@@ -27,12 +25,12 @@ const data = await yubikiri({
 // data === { one: 1, two: 2 }
 ```
 
-You can also specify Promises that depend on other Promises being loaded at the same time. Yubikiri will take care of ensuring the Promises that depend on each other are resolved correctly.
+You can also specify functions that depend on other values being calculated at the same time. Yubikiri will take care of ensuring the values that depend on each other are resolved correctly. Each function is only calculated once, even if more than one other function depends on its value.
 
 ```javascript
 const data = await yubikiri(query => ({
   one: Promise.resolve(1),
-  two: Promise.resolve(2),
+  two: 2,
   three: (query) => {
     return query.one.then(one => {
       return query.two.then(two => {
@@ -62,8 +60,4 @@ const data = await yubikiri(query => ({
 
 If any of the specified Promises reject, the overall Promise returned from Yubikiri will also reject with the same value.
 
-Yubikiri will try to detect accidental infinite loops and return a rejected Promise, but it's possible to build an asynchronous infinite loop that it can't detect.
-
-## Developing
-
-Yubikiri requires a version of Node with Proxy support to work. Additionally, the tests utilize async/await, so those must also be available in your environment to run the tests. Node 7.6.0 is the first version of Node that can run Yubikiri and the tests natively.
+Yubikiri will try to detect infinite loops and return a rejected Promise with an error message that describes the dependency loop.
