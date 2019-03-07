@@ -119,5 +119,18 @@ describe('yubikiri', function () {
         assert.match(err.message, /loop.*one -> three -> two -> one/)
       }
     })
+
+    it('only calculates a value once', async function() {
+      const data = await yubikiri({
+        random: () => new Promise(res => res(Math.random())),
+        one: (q) => q.random,
+        two: (q) => q.random,
+        three: (q) => q.random
+      })
+
+      assert.equal(data.random, data.one)
+      assert.equal(data.random, data.two)
+      assert.equal(data.random, data.three)
+    })
   })
 })
